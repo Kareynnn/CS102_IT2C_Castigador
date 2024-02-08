@@ -1,0 +1,63 @@
+---
+title: "Lab Exercise 1"
+author: "Karen Castigador"
+date: "2024-02-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+ library(rvest)
+ library(polite)
+ library(httr)
+ library(dplyr)
+  
+  url <-"https://www.amazon.com/s?i=specialty-aps&bbn=4954955011&rh=n%3A4954955011%2Cn%3A%212617942011%2Cn%3A12896081&ref=nav_em__nav_desktop_sa_intl__beading_jewelry_making_0_2_8_3"
+   
+  session <- bow (url, user_agent="Educational Purposes")
+  session
+  
+  session_page <- scrape(session)
+
+```
+
+```{r}
+  jewelry_url1 <- read_html(url1)
+   
+  #scrape for the name of the product
+jewelryname1 <- jewelry_url1 %>%
+  html_nodes("span.a-size-base-plus.a-color-base.a-text-normal") %>%
+  html_text()
+jewelryname1
+
+  #scrape the price
+jewelryprice1 <- jewelry_url1 %>%
+  html_nodes("div.a-section.a-spacing-none.a-spacing-top-small.s-price-instructions-style") %>%
+  html_text()
+  jewelryprice1
+  
+  #Scrape the ratings
+jewelryratings1<- jewelry_url1 %>%
+  html_nodes("span.a-size-base.s-underline-text") %>%
+  html_text()
+  jewelryratings1
+  
+  #scrape the total reviews
+jewelrytotalrev1 <- jewelry_url1 %>%
+  html_nodes("i.a-icon.a-icon-popover") %>%
+  html_text()
+  jewelrytotalrev1
+
+  #merge it in a data frame
+dataframe1 <- data.frame(
+  Product_Name = jewelryname1,
+  Price = jewelryprice1,
+  Ratings = jewelryratings1,
+  Reviews = jewelrytotalrev1
+)
+dataframe1
+```
