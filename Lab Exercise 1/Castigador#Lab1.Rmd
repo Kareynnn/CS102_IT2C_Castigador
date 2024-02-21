@@ -1,0 +1,81 @@
+---
+title: "LabExercise1"
+author: "Karen Castigador"
+date: "2024-02-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rvest)
+library(httr)
+library(dplyr) 
+library(polite)
+
+url <- 'https://www.imdb.com/list/ls055386972/'
+session <- bow(url,
+               user_agent = "Educational")
+session
+
+
+```
+```{r}
+library(rvest)
+title <- scrape(session)%>%
+  html_nodes("h3.lister-item-header")%>%
+  html_text
+  title
+
+#Subset title
+ subsettt <- as.data.frame(title[1:51])
+ colnames(subsettt) <- "ranks"
+ split_df <- strsplit(as.character(subsettt$ranks), ".", fixed = TRUE )
+ split_df<- data.frame(do.call(rbind, split_df))
+#Remove duplicate columns
+ split_df <- split_df[-c(3:5)]
+#Rename columns
+ colnames(split_df) <- c("ranks","title")
+ split_df
+#Make into a data frame
+  mekdf <- as.data.frame(split_df)
+ mekdf
+ 
+#Scraping the imdb rating
+  rate <- scrape(session) %>%
+html_nodes("div.ipl-rating-star.small")  %>%
+html_attr("aria-label")
+rate
+
+#subset the scraped data
+  rate_sub<- as.data.frame(rate[1:50])
+  head(rate_sub)
+#renaming the column
+  colnames(rate_sub) <- "rate"
+  split_df3 <- strsplit(as.character(rate_sub$rate),".",fixed = TRUE)
+  split_df3 <- data.frame(do.call(rbind,split_df))
+#extract only the ratings
+  ratings<- str_extract(rate_sub$rate, "\\d+\\.\\d+")
+  ratings
+#make this into a data frame
+  rates <- as.data.frame(ratings)
+
+#scraping vote counts
+votec <- scrape(session) %>%
+  html_nodes("span") %>%
+  html_text
+#subset the scraped data of vote counts
+subvote <- as.data.frame(votec[1:50])
+#renaming columns
+colnames(subvote) <- "votecount"
+split_df2 <- strsplit(as.character(subvote$voteCount), ".", fixed = TRUE )
+split_df2 <- data.frame(do.call(rbind, subvote))
+subvote
+
+
+
+
+
+```
