@@ -15,7 +15,7 @@ library(httr)
 library(dplyr) 
 library(polite)
 
-url <- 'https://www.imdb.com/list/ls055386972/'
+url <- 'https://www.imdb.com/chart/top/'
 session <- bow(url,
                user_agent = "Educational")
 session
@@ -24,13 +24,13 @@ session
 ```
 ```{r}
 library(rvest)
-title <- scrape(session)%>%
-  html_nodes("h3.lister-item-header")%>%
+ title <- scrape(session)%>%
+  html_nodes("h3.ipc-title__text")%>%
   html_text
   title
 
 #Subset title
- subsettt <- as.data.frame(title[2:51])
+ subsettt <- as.data.frame(title[1:50])
  colnames(subsettt) <- "ranks"
  split_df <- strsplit(as.character(subsettt$ranks), ".", fixed = TRUE )
  split_df<- data.frame(do.call(rbind, split_df))
@@ -48,12 +48,12 @@ title <- scrape(session)%>%
  
 #Scraping the imdb rating
   rate <- scrape(session) %>%
-html_nodes("span.ipl-rating-star__star")  %>%
+html_nodes("span.ipc-rating-star--imdb")  %>%
 html_attr("aria-label")
 rate
 
 #subset the scraped data
-  rate_sub<- as.data.frame(rate[1:50])
+  rate_sub<- as.data.frame(rate[2:50])
   head(rate_sub)
 #renaming the column
   colnames(rate_sub) <- "rate"
@@ -67,11 +67,10 @@ rate
 
 #scraping vote counts
 votec <- scrape(session) %>%
-  html_nodes("div.ipl-rating-star.small
-") %>%
+  html_nodes("span.ipc-rating-star--voteCount") %>%
   html_text
 #subset the scraped data of vote counts
-subvote <- as.data.frame(votec[1:50])
+subvote <- as.data.frame(votec[2:51])
 #renaming columns
 colnames(subvote) <- "votecount"
 split_df2 <- strsplit(as.character(subvote$voteCount), ".", fixed = TRUE )
@@ -83,9 +82,48 @@ shesh <- read_html(url)
 
 # Extract the HTML structure of the div class
 div_elements <- shesh %>%
-  html_nodes("div.sc-43986a27-7.dBkaPT.cli-title-metadata")
+  html_nodes("div.sc-be6f1408-7.iUtTHEN.cli-title-metadata")
 
+# Create an empty list to store the extracted information
+results_list <- list()
 
+# Loop through each div element
+for (i in 1:min(length(div_elements), 50)) {
+  # Extract all span elements within each div
+  spans <- div_elements[i] %>%
+    html_nodes("span.sc-be6f1408-8.fcCUPU.cli-title-metadata-item")
 
+  # Extract and store the text from each span
+  span_texts <- sapply(spans, function(span) {
+    span_text <- span %>% html_text()
+    return(span_text)
+  })
+ # Store the extracted information in the results list
+  results_list[[i]] <- span_texts
+}
 
+# Convert the results list to a data frame
+results_df <- do.call(rbind.data.frame, results_list)
+
+# Set column names based on the extracted spans
+colnames(results_df) <- paste0("span_", 1:ncol(results_df))
+
+newcol <- c("year", "episodes", "guidance")
+colnames(results_df) <- newcol
+# Removing the third column
+results_df <- results_df[, -which(names(results_df) == "guidance")]
+
+# Print or return the results
+print(results_df)
+
+dataf <- as.data.frame(results_df)
+# Combine in one data frame
+newdata <- data.frame(
+  mekdf,
+ rates,
+  Vote_count = subvote,
+  dataf
+
+)
+newdata
 ```
