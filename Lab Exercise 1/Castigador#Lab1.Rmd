@@ -14,6 +14,7 @@ library(rvest)
 library(httr)
 library(dplyr) 
 library(polite)
+library(stringr)
 
 url <- 'https://www.imdb.com/chart/top/'
 session <- bow(url,
@@ -53,14 +54,14 @@ html_attr("aria-label")
 rate
 
 #subset the scraped data
-  rate_sub<- as.data.frame(rate[2:50])
+  rate_sub<- as.data.frame(rate[1:50])
   head(rate_sub)
 #renaming the column
   colnames(rate_sub) <- "rate"
   split_df3 <- strsplit(as.character(rate_sub$rate),".",fixed = TRUE)
   split_df3 <- data.frame(do.call(rbind,split_df))
 #extract only the ratings
-  ratings<- str_extract(rate_sub$rate, "\\d+\\.\\d+")
+  ratings<- str_extract(rate_sub$rate,'\\d+\\.\\d+')
   ratings
 #make this into a data frame
   rates <- as.data.frame(ratings)
@@ -70,7 +71,7 @@ votec <- scrape(session) %>%
   html_nodes("span.ipc-rating-star--voteCount") %>%
   html_text
 #subset the scraped data of vote counts
-subvote <- as.data.frame(votec[2:51])
+subvote <- as.data.frame(votec[1:50])
 #renaming columns
 colnames(subvote) <- "votecount"
 split_df2 <- strsplit(as.character(subvote$voteCount), ".", fixed = TRUE )
