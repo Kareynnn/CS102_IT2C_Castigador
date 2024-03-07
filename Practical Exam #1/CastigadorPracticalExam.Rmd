@@ -1,0 +1,114 @@
+---
+title: "CastigadorPractExam#1"
+author: "Karen Castigador"
+date: "2024-03-07"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r cars}
+summary(cars)
+```
+
+```{r}
+#A.Load the built-in warpbreaks dataset
+  summary(warpbreaks)
+  data("warpbreaks")
+  warpbreaks
+  
+```
+```{r}
+#1. Find out, in a single command, which columns of warpbreaks are either numeric or integer. What are the data types of each column?
+  
+  str(warpbreaks)
+  typeof(warpbreaks$breaks)
+  typeof(warpbreaks$wool)
+  typeof(warpbreaks$tension)
+```
+
+```{r}
+#2.How many observations does it have? 
+ # It has 54 observatons in warpbreaks
+ wa <- nrow(warpbreaks)
+ wa
+```
+
+```{r}
+#3. Is numeric a natural data type for the columns which are stored as such? Convert to integer when necessary.
+
+```
+
+```{r}
+#4. Error messages in R sometimes report the underlying type of an object rather than the user-level class. Derive from the following code and error message what the underlying type. Explain what is the error all about. Do not just copy the error message that was displayed.
+
+
+```
+
+```{r}
+#B.Load the exampleFile.txt
+
+  file <- file("exampleFile.txt")
+  read <- readLines(file)
+  read
+
+```
+```{r}
+#2b
+ 
+com <- read[grepl("^//",read)]
+com
+
+vect <- read[!grepl("^//", read)]
+vect
+
+```
+
+```{r}
+#3b
+subsetCom <-com[1]
+date <- gsub("//Survey data. Created:","", subsetCom)
+date
+
+cat ("It was Created,",date)
+
+```
+
+```{r}
+
+vec_Split <- (strsplit(vect,";"))
+vec_Split
+
+
+```
+
+```{r}
+#4b
+max_vec <-max(length(vec_Split))
+max_vec
+
+appendRow <- lapply(vec_Split, function(x) c(x,rep(NA, max_vec - length(x))))
+appendRow
+
+
+```
+
+```{r}
+#B4c
+
+unlistdata <- unlist(appendRow)
+unlistdata
+
+dat_matrix <- matrix(unlistdata, ncol=4, nrow = 3,
+                     dimnames = list(c("row1","row2","row3")))
+dat_matrix
+
+
+```
+
+
+
