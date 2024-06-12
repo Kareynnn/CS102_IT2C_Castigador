@@ -1,0 +1,39 @@
+---
+title: "CastigadorLab5"
+author: "Karen Castigador"
+date: "2024-06-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+#cleaning articles, removing emoji's 
+library(tidyverse)  
+library(stringr)    
+
+# Read the data
+data1 <- read.csv("JavaScriptArticles.csv")
+
+
+col_clean <- c("Title", "Author", "Subject", "Abstract")  
+# Columns to clean
+for (col in col_clean) {
+  data[, col] <- str_to_lower(data[, col]) %>%
+                 str_replace_all("\\p{Emoji}", "")
+}
+
+
+data$Meta <- as.Date(data$Meta, format = "%a, %d %b %Y %H:%M:%S UTC")                      
+
+# Save the cleaned data
+write.csv(data, "clean/JavaScriptArticles.csv")
+
+```
