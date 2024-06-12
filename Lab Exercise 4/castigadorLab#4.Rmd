@@ -1,0 +1,120 @@
+---
+title: "CastigadorlLab4"
+author: "Karen Castigador"
+date: "2024-06-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r eval=FALSE}
+#Scrape arxiv articles "JavaScript"
+library(dplyr)
+library(stringr)
+library(httr)
+library(rvest)
+
+begin <- proc.time()
+
+Title <- Author <- Subject <- Abstract <- Meta <- vector("character")
+
+link <- 'https://arxiv.org/search/?query=JavaScript&searchtype=all&abstracts=show&order=-announced_date_first&size=50&start'
+pages <- seq(from = 0, to = 100, by = 50)
+
+for(page in pages) {
+  
+  pasteurl <- paste0(link, page)
+
+  article_scrapes <- read_html(pasteurl) %>% 
+    html_nodes('p.list-title.is-inline-block') %>% 
+    html_nodes('a[href^="https://arxiv.org/abs"]') %>% 
+    html_attr('href')
+  
+  
+  for(article_scrape in article_scrapes) {
+  
+    articlepage <- read_html(article_scrape)
+
+    
+    articletitle <- articlepage %>% html_nodes('h1.title.mathjax') %>% html_text(TRUE)
+    articletitle <- gsub('Title:', '', articletitle)
+    Title <- c(Title, articletitle)
+    
+    
+    articleauthor <- articlepage %>% html_nodes('div.authors') %>% html_text(TRUE)
+    articleauthor <- gsub('Authors:','',articleauthor)
+    Author <- c(Author, articleauthor)
+    
+
+    articlesubject <- articlepage %>% html_nodes('span.primary-subject') %>% html_text(TRUE)
+    Subject <- c(Subject, articlesubject)
+    
+  
+    articleabstract <- articlepage %>% html_nodes('blockquote.abstract.mathjax') %>% html_text(TRUE)
+    articleabstract <- sub('Abstract:','',articleabstract)
+    Abstract <- c(Abstract, articleabstract)
+    
+  
+    articlemeta <- articlepage %>% html_nodes('div.submission-history') %>% html_text(TRUE)
+    articlemeta <- gsub('\\s+', ' ',articlemeta)
+    articlemeta <- strsplit(articlemeta, '[v1]', fixed = T)
+    articlemeta <- articlemeta[[1]][2] %>% unlist %>% str_trim
+    Meta <- c(Meta, articlemeta)
+    
+    
+   cat("article:", length(Title), "\n")
+    Sys.sleep(2)
+  }
+}
+
+df_articles <- data.frame(Title, Author, Subject, Abstract, Meta)
+df_articles
+
+end <- proc.time()
+end - begin
+```
+
+```{r, eval=FALSE}
+#save to rdata and csv
+save(df_articles, file = "JavaScript_Arxiv.RData")
+write.csv(df_articles, file = "JavaScriptArticles.csv")
+
+```
+
+
+```{r, eval=FALSE}
+#Connect to my Database "Lab Exercise 4"
+library(DBI)
+library(odbc)
+library(RMySQL)
+library(dplyr,dbplyr)
+connect <- dbConnect(RMySQL::MySQL(),
+                        dsn="MariaDB-connection",
+                        Server = "lab_exercise4",
+                        dbname = "lab_exercise4", 
+                        user = "root", 
+                        password = "") 
+```
+
+```{r,eval=FALSE}
+library(readr)
+
+JavaScriptArticles <- read.csv("JavaScriptArticles.csv")
+head(JavaScriptArticles)
+
+```
+
+```{r,eval=FALSE}
+dbWriteTable(connect, 'Articles', JavaScriptArticles, append = TRUE)
+```
+
+```{r,eval=FALSE}
+dbListTables(connect)
+dbListFields(connect,'Articles')
+```
+
+```{r,eval=FALSE}
+data <- dbGetQuery(connect, "SELECT * FROM lab_exercise4.Articles") 
+glimpse(data )
+```
